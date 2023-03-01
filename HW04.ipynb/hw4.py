@@ -44,9 +44,9 @@ def printBoard(B,ind=0):
         print(' |')
     print(indent,'-------------------')
     
-printBoard(getEmptyBoard())
-print()
-printBoard(ERROR)
+# printBoard(getEmptyBoard())
+# print()
+# printBoard(ERROR)
 
 # This function should make the indicated move on the input board, and return that board, or ERROR (-1)
 # if there is no room in the column of the move.  Note that you are changing the original board
@@ -93,44 +93,44 @@ def makeExample(moves):
 
 # Test out of range error -- See Appendix for what you should produce
 
-if(dropPiece(X,100,getEmptyBoard())):
-    print("Move outside range 0..7!")
-else:
-    print("Range test did not work. ")    
-print()
+# if(dropPiece(X,100,getEmptyBoard())):
+#     print("Move outside range 0..7!")
+# else:
+#     print("Range test did not work. ")    
+# print()
 
-# Test dropPiece
+# # Test dropPiece
 
-B = dropPiece(X,3,getEmptyBoard())
-B = dropPiece(O,4,B)
-B = dropPiece(X,0,B)
-B = dropPiece(O,7,B)
-B = dropPiece(X,5,B)
-B = dropPiece(O,3,B)
-B = dropPiece(X,4,B)
-B = dropPiece(O,5,B)
-B = dropPiece(X,5,B)
-printBoard(B)
-print()
-
-
-L2R = list(range(8))
-R2L = L2R[::-1]
-M = (L2R + R2L) * 4
+# B = dropPiece(X,3,getEmptyBoard())
+# B = dropPiece(O,4,B)
+# B = dropPiece(X,0,B)
+# B = dropPiece(O,7,B)
+# B = dropPiece(X,5,B)
+# B = dropPiece(O,3,B)
+# B = dropPiece(X,4,B)
+# B = dropPiece(O,5,B)
+# B = dropPiece(X,5,B)
+# printBoard(B)
+# print()
 
 
-fullBoard = makeExample(M)
-printBoard(fullBoard)
-print()
+# L2R = list(range(8))
+# R2L = L2R[::-1]
+# M = (L2R + R2L) * 4
 
 
-# next one should return error message for any 0 <= m <= 7, since there is no room in any column
+# fullBoard = makeExample(M)
+# printBoard(fullBoard)
+# print()
 
-m = 4
 
-print("No room in column "+str(m)+":",noRoomInColumn(m,fullBoard),'\n')
+# # next one should return error message for any 0 <= m <= 7, since there is no room in any column
 
-printBoard( dropPiece(X,m,fullBoard) )
+# m = 4
+
+# print("No room in column "+str(m)+":",noRoomInColumn(m,fullBoard),'\n')
+
+# printBoard( dropPiece(X,m,fullBoard) )
 
 # player = 1 (X) or 2 (O)
 # checkWin(X,board) returns X=1 if X wins,  else 0
@@ -192,40 +192,40 @@ def randomPlayer(board):
 
 # following is just to show how to accept input from keyboard, you will rewrite all of this
 
-print("Welcome to Connect Four!")
+# print("Welcome to Connect Four!")
 
-board = getEmptyBoard()
-printBoard(board)
+# board = getEmptyBoard()
+# printBoard(board)
 
-turn = True
+# turn = True
 
-for i in range(64):
-    if turn:
-        print("Your move: ",end='')
-        move = int(input())
-        board = dropPiece(X,move,board)
-        if isError(board):
-            print("Illegal move!")
-            break
-        printBoard(board)
-        if checkWin(X,board):
-            print("You win!")
-            break
-    else:
-        print("Random Bot move: ",end='')
-        move = randomPlayer(board)
-        board = dropPiece(O,move,board)
-        if isError(board):
-            print("Illegal move!")
-            break
-        printBoard(board)
-        if checkWin(O,board):
-            print("You lose!")
-            break
-    print()
-    turn = not turn
+# for i in range(64):
+#     if turn:
+#         print("Your move: ",end='')
+#         move = int(input())
+#         board = dropPiece(X,move,board)
+#         if isError(board):
+#             print("Illegal move!")
+#             break
+#         printBoard(board)
+#         if checkWin(X,board):
+#             print("You win!")
+#             break
+#     else:
+#         print("Random Bot move: ",end='')
+#         move = randomPlayer(board)
+#         board = dropPiece(O,move,board)
+#         if isError(board):
+#             print("Illegal move!")
+#             break
+#         printBoard(board)
+#         if checkWin(O,board):
+#             print("You lose!")
+#             break
+#     print()
+#     turn = not turn
 
-print("Bye!")
+# print("Bye!")
 
 # PROBLEM 2
 
@@ -293,15 +293,14 @@ maxDepth = 3                   # You will want to change this and experiment wit
 
 countNodes = 0
 
+def get_valid_moves(board):
+    valid_moves = []
+    for col in range(N):
+        if not noRoomInColumn(col, board):
+            valid_moves.append(col)
+    return valid_moves
 
 def minMax(board, player, depth, alpha, beta):
-    def get_valid_moves(board):
-        valid_moves = []
-        for col in range(N):
-            if not noRoomInColumn(col, board):
-                valid_moves.append(col)
-        return valid_moves
-
     global countNodes
     countNodes += 1  
     
@@ -310,15 +309,40 @@ def minMax(board, player, depth, alpha, beta):
         return (score, None)
     
     winner = checkWin(player, board)
-    if winner is not None:
+    if winner != 0:
         score = eval(board)
         return (score, None)
+
+    if player == O:
+        best_score = -sys.maxsize
+    else:
+        best_score = sys.maxsize
+
+    best_move = None
+
+    for move in get_valid_moves(board):
+        new_board = dropPiece(player, move, np.copy(board))
+        score, _ = minMax(new_board, X, depth+1, alpha, beta)
+        if player == O:
+            if score > best_score:
+                best_score = score
+                best_move = move
+            alpha = max(alpha, best_score)
+        else:
+            if score < best_score:
+                best_score = score
+                best_move = move
+            beta = min(beta, best_score)
+        if beta <= alpha:
+            break
     
+    return (best_score, best_move)
+
     if player == O:  # maximizing player
         best_score = -sys.maxsize
         best_move = None
         for move in get_valid_moves(board):
-            new_board = dropPiece(player, move, board)
+            new_board = dropPiece(player, move, np.copy(board))
             score, _ = minMax(new_board, X, depth+1, alpha, beta)
             if score > best_score:
                 best_score = score
@@ -332,7 +356,7 @@ def minMax(board, player, depth, alpha, beta):
         best_score = sys.maxsize
         best_move = None
         for move in get_valid_moves(board):
-            new_board = dropPiece(player, move, board)
+            new_board = dropPiece(player, move, np.copy(board))
             score, _ = minMax(new_board, O, depth+1, alpha, beta)
             if score < best_score:
                 best_score = score
@@ -349,3 +373,32 @@ def minMax(board, player, depth, alpha, beta):
 def player(board):    
     (_,move) = minMax(board,O,0,-sys.maxsize,sys.maxsize)    # only place we need the move
     return move
+
+# tests for minimax
+
+# Some simple tests:  better testing can be done by running the interactive version from Part C
+# Your results may vary slight from what is shown here, but should be similar
+
+maxDepth = 1          # minMax will call eval on all children of root node
+
+board1 = makeExample([3,4,2,5,2,6,2])
+# print()
+# printBoard(board1)
+print("minMax:", minMax(board1,O,0,-sys.maxsize,sys.maxsize) )  # (9223372036854775807, 7)
+
+# board2 = makeExample([3,4,2,5,2,0,2])
+# print()
+# printBoard(board2)
+# print("minMax:", minMax(board2,O,0,-sys.maxsize,sys.maxsize) )  # (10, 2)
+
+# maxDepth = 2 
+
+# board2 = makeExample([3,4,2,5,2,0,2])
+# print()
+# printBoard(board2)
+# print("minMax:", minMax(board2,O,0,-sys.maxsize,sys.maxsize) )  # (-50, 2)
+
+# board3 = makeExample([3,0,4,4,3,4,5])
+# print()
+# printBoard(board3)
+# print("minMax:", minMax(board3,O,0,-sys.maxsize,sys.maxsize) )  # (-9223372036854775807, 7) every move loses!
